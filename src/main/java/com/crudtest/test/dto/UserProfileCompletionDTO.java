@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record UserProfileCompletionDTO (
+        @NotNull Long id,
         @NotBlank String firstName,
         @NotBlank String lastName,
         @NotBlank String username,

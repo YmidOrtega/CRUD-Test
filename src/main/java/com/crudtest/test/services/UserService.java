@@ -2,6 +2,7 @@ package com.crudtest.test.services;
 
 import com.crudtest.test.dto.UserProfileCompletionDTO;
 import com.crudtest.test.dto.UserRegistrationDTO;
+import com.crudtest.test.dto.UsernameChangeDTO;
 import com.crudtest.test.model.Address;
 import com.crudtest.test.model.Plan;
 import com.crudtest.test.model.User;
@@ -39,8 +40,8 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    public User completeRegistration(Long id, UserProfileCompletionDTO userProfileCompletionDTO) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public User completeRegistration(UserProfileCompletionDTO userProfileCompletionDTO) {
+        User user = userRepository.findById(userProfileCompletionDTO.id()).orElseThrow(() -> new RuntimeException("User not found"));
         user.setFirstName(userProfileCompletionDTO.firstName());
         user.setLastName(userProfileCompletionDTO.lastName());
         user.setUsername(userProfileCompletionDTO.username());
@@ -53,8 +54,13 @@ public class UserService {
                 userProfileCompletionDTO.address().zipCode(),
                 userProfileCompletionDTO.address().country()
         ));
-
         return userRepository.save(user);
-
     }
+
+    public User UpdateUsername (UsernameChangeDTO usernameChangeDTO) {
+        User user = userRepository.findById(usernameChangeDTO.id()).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setUsername(usernameChangeDTO.username());
+        return userRepository.save(user);
+    }
+
 }

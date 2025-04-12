@@ -3,15 +3,16 @@ package com.crudtest.test.controller;
 import com.crudtest.test.dto.NewUserDTO;
 import com.crudtest.test.dto.UserProfileCompletionDTO;
 import com.crudtest.test.dto.UserRegistrationDTO;
+import com.crudtest.test.dto.UsernameChangeDTO;
 import com.crudtest.test.model.User;
 import com.crudtest.test.repository.UserRepository;
 import com.crudtest.test.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 public class UserController {
@@ -39,22 +40,33 @@ public class UserController {
     }
 
 
-    @PostMapping("/{id}/complete-registration")
+    @PostMapping("/complete-registration")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<User> completeRegistration(@PathVariable Long id, @RequestBody UserProfileCompletionDTO userProfileCompletionDTO) {
+    public ResponseEntity<User> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO) {
         try {
-            User user = userService.completeRegistration(id, userProfileCompletionDTO);
+            User user = userService.completeRegistration(userProfileCompletionDTO);
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    @GetMapping("/users")
+    @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public List<NewUserDTO> newUSer() {;
-        return userRepository.findAll().stream().map(user -> new NewUserDTO(user.getPlan().getName(), user.getUsername())).toList();
+    public Page<NewUserDTO> newUSer(Pageable paginacion) {;
+        return userRepository.findAll(paginacion).map(user -> new NewUserDTO(user.getPlan().getName(), user.getUsername()));
     }
 
+    @PutMapping ("/")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<User> updateUser(@RequestBody UsernameChangeDTO usernameChangeDTO) {
+        try {
+            User user = userService.UpdateUsername(usernameChangeDTO);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+    }
 
 }
