@@ -36,26 +36,26 @@ public class UserController {
 
     @PostMapping("/complete-registration")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, UriComponentsBuilder uriBuilder) {
         User user = userService.completeRegistration(userProfileCompletionDTO);
-        UserDTO userDTO = new UserDTO(user.getPlan().getName(), user.getUsername());
+        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlan().getName(), user.getUsername());
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
-        return ResponseEntity.ok().location(uri).body(userDTO);
+        return ResponseEntity.ok().location(uri).body(userDefaultDTO);
     }
 
     @GetMapping("/")
-    public ResponseEntity<Page<UserDTO>> newUser(Pageable pagination) {
-        Page<UserDTO> UserDTOPage = userRepository.findByActiveTrue(pagination)
-                .map(user -> new UserDTO(user.getPlan().getName(), user.getUsername()));
+    public ResponseEntity<Page<UserDefaultDTO>> newUser(Pageable pagination) {
+        Page<UserDefaultDTO> UserDTOPage = userRepository.findByActiveTrue(pagination)
+                .map(user -> new UserDefaultDTO(user.getPlan().getName(), user.getUsername()));
         return ResponseEntity.ok(UserDTOPage);
     }
 
     @PutMapping ("/")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDTO> updateUser(@RequestBody UsernameChangeDTO usernameChangeDTO) {
-        User user = userService.UpdateUsername(usernameChangeDTO);
-        UserDTO userDTO = new UserDTO(user.getPlan().getName(), user.getUsername());
-        return ResponseEntity.ok(userDTO);
+    public ResponseEntity<UserDefaultDTO> updateUser(@RequestBody UsernameChangeDTO usernameChangeDTO) {
+        User user = userService.updateUsername(usernameChangeDTO);
+        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlan().getName(), user.getUsername());
+        return ResponseEntity.ok(userDefaultDTO);
     }
 
 //    @DeleteMapping("/{id}")
@@ -72,14 +72,14 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> deactivateUser(@PathVariable Long id) {
-        userService.deactivateUser(id);
+        userService.userDeactivatedDTO(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserInformationDTO> userInformation(@PathVariable Long id) {
-        UserInformationDTO userInformationDTO = userService.userInformation(id);
+        UserInformationDTO userInformationDTO = userService.userInformationDTO(id);
         return ResponseEntity.ok(userInformationDTO);
     }
 }

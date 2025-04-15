@@ -3,6 +3,7 @@ package com.crudtest.test.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.mapstruct.Mapper;
 
 public record AddressDTO(
         @NotBlank String streetAddress,

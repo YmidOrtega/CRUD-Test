@@ -27,7 +27,7 @@ public class User {
     private LocalDate birthDate;
     private String email;
     private String password;
-    private String PhoneNumber;
+    private String phoneNumber;
     private LocalDate createdAt;
     @Embedded
     private Address address;
