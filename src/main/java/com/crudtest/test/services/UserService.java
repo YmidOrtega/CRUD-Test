@@ -1,5 +1,6 @@
 package com.crudtest.test.services;
 
+import com.crudtest.test.dto.UserInformationDTO;
 import com.crudtest.test.dto.UserProfileCompletionDTO;
 import com.crudtest.test.dto.UserRegistrationDTO;
 import com.crudtest.test.dto.UsernameChangeDTO;
@@ -11,6 +12,7 @@ import com.crudtest.test.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 
@@ -79,11 +81,27 @@ public class UserService {
 //    }
 
     @Transactional
-    public void deactivateUser(Long id) {
+    public User deactivateUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         user.setActive(false);
         userRepository.save(user);
+        return user;
     }
 
 
+    public UserInformationDTO userInformation(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("User is not active");
+        }
+        return new UserInformationDTO(
+                user.getPlan().getName(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getBirthDate(),
+                user.getPhoneNumber()
+        );
+    }
 }
