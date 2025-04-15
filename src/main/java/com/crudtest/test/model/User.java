@@ -31,5 +31,7 @@ public class User {
     private LocalDate createdAt;
     @Embedded
     private Address address;
+    @Column(name = "active")
+    private boolean active;
 
 }

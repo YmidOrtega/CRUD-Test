@@ -8,10 +8,11 @@ import com.crudtest.test.model.Plan;
 import com.crudtest.test.model.User;
 import com.crudtest.test.repository.PlanRepository;
 import com.crudtest.test.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -32,15 +33,16 @@ public class UserService {
                 .build();
     }
 
-    public User createUser(UserRegistrationDTO userRegistrationDTO) {
+    public User createUser(@Valid UserRegistrationDTO userRegistrationDTO) {
         long planDefaultId = 1L;
         Plan planDefault = planRepository.findById(planDefaultId).orElseThrow(() -> new RuntimeException("Plan not found"));
         User newUser = mapToUser(userRegistrationDTO);
         newUser.setPlan(planDefault);
+        newUser.setActive(true);
         return userRepository.save(newUser);
     }
 
-    public User completeRegistration(UserProfileCompletionDTO userProfileCompletionDTO) {
+    public User completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO) {
         User user = userRepository.findById(userProfileCompletionDTO.id()).orElseThrow(() -> new RuntimeException("User not found"));
         user.setFirstName(userProfileCompletionDTO.firstName());
         user.setLastName(userProfileCompletionDTO.lastName());
@@ -57,10 +59,31 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User UpdateUsername (UsernameChangeDTO usernameChangeDTO) {
+    @Transactional
+    public User UpdateUsername(@Valid UsernameChangeDTO usernameChangeDTO) {
         User user = userRepository.findById(usernameChangeDTO.id()).orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getUsername().equals(usernameChangeDTO.username())) {
+            throw new IllegalArgumentException("The new username is the same as the current one");
+        }
+        if (userRepository.existsByUsername(usernameChangeDTO.username())) {
+            throw new IllegalArgumentException("The username already exists");
+        }
         user.setUsername(usernameChangeDTO.username());
         return userRepository.save(user);
     }
+
+//    @Transactional
+//    public void deleteUser(Long id) {
+//        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+//        userRepository.delete(user);
+//    }
+
+    @Transactional
+    public void deactivateUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
 
 }
