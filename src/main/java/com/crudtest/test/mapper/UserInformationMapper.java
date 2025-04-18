@@ -6,9 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper (componentModel = "spring")
+@Mapper(componentModel = "spring")
 public interface UserInformationMapper {
-    @Mapping(source = "plan.name", target = "plan")
+    @Mappings({
+            @Mapping(source = "planId.name", target = "plan")
+    })
     UserInformationDTO toUserInformationDTO(User user);
 
 }

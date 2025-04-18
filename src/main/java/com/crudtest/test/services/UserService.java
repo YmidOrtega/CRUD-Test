@@ -5,9 +5,10 @@ import com.crudtest.test.mapper.UserInformationMapper;
 import com.crudtest.test.mapper.UserProfileCompletionMapper;
 import com.crudtest.test.mapper.UserRegistrationMapper;
 import com.crudtest.test.model.Plan;
+import com.crudtest.test.model.Role;
 import com.crudtest.test.model.User;
-import com.crudtest.test.mapper.AddressMapper;
 import com.crudtest.test.repository.PlanRepository;
+import com.crudtest.test.repository.RoleRepository;
 import com.crudtest.test.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -20,15 +21,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
+    private final RoleRepository roleRepository;
 
     private final UserInformationMapper userInformationMapper;
     private final UserRegistrationMapper userRegistrationMapper;
     private final UserProfileCompletionMapper userProfileCompletionMapper;
 
 
-    public UserService(UserRepository userRepository, PlanRepository planRepository, UserInformationMapper userInformationMapper, UserRegistrationMapper userRegistrationMapper, UserProfileCompletionMapper userProfileCompletionMapper) {
+
+    public UserService(UserRepository userRepository, PlanRepository planRepository, RoleRepository roleRepository, UserInformationMapper userInformationMapper, UserRegistrationMapper userRegistrationMapper, UserProfileCompletionMapper userProfileCompletionMapper) {
         this.userRepository = userRepository;
         this.planRepository = planRepository;
+        this.roleRepository = roleRepository;
         this.userInformationMapper = userInformationMapper;
         this.userRegistrationMapper = userRegistrationMapper;
         this.userProfileCompletionMapper = userProfileCompletionMapper;
@@ -42,9 +46,12 @@ public class UserService {
     public User createUser(@Valid UserRegistrationDTO userRegistrationDTO) {
         long planDefaultId = 1L;
         Plan planDefault = planRepository.findById(planDefaultId).orElseThrow(() -> new RuntimeException("Plan not found"));
+        long roleDefaultId = 1L;
+        Role roleDefault = roleRepository.findById(roleDefaultId).orElseThrow(() -> new RuntimeException("Role not found"));
         User newUser = userRegistrationMapper.toUser(userRegistrationDTO);
         newUser.setCreatedAt(LocalDate.now());
-        newUser.setPlan(planDefault);
+        newUser.setPlanId(planDefault);
+        newUser.setRoleId(roleDefault);
         newUser.setActive(true);
         return userRepository.save(newUser);
     }

@@ -19,7 +19,10 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "plan_id", nullable = false)
-    private Plan plan;
+    private Plan planId;
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role roleId;
     private String firstName;
     private String lastName;
     private String username;

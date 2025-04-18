@@ -9,10 +9,11 @@ import org.mapstruct.Mappings;
 @Mapper (componentModel = "spring")
 public interface UserRegistrationMapper {
     @Mappings({
-            @Mapping(target = "createdAt", expression = "java(java.time.LocalDate.now())"),
-            @Mapping(target = "plan", ignore = true),     // Se setea después en el servicio
-            @Mapping(target = "active", ignore = true),   // También en el servicio
-            @Mapping(target = "id", ignore = true),       // Lo genera la base de datos
+            @Mapping(target = "createdAt", ignore = true),
+            @Mapping(target = "planId", ignore = true),
+            @Mapping(target = "roleId", ignore = true),
+            @Mapping(target = "active", ignore = true),
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "firstName", ignore = true),
             @Mapping(target = "lastName", ignore = true),
             @Mapping(target = "username", ignore = true),

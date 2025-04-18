@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record UserInformationDTO(
         String plan,
+        String role,
         String email,
         String firstName,
         String lastName,

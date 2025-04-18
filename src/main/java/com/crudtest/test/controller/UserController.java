@@ -29,7 +29,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserResponseDTO> createdUser(@RequestBody UserRegistrationDTO userRegistrationDTO, UriComponentsBuilder uriBuilder) {
         User createdUser = userService.createUser(userRegistrationDTO);
-        UserResponseDTO userResponseDTO = new UserResponseDTO(createdUser.getPlan().getName(), createdUser.getEmail());
+        UserResponseDTO userResponseDTO = new UserResponseDTO(createdUser.getPlanId().getName(), createdUser.getEmail());
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(createdUser.getId()).toUri();
         return ResponseEntity.created(uri).body(userResponseDTO);
     }
@@ -38,7 +38,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, UriComponentsBuilder uriBuilder) {
         User user = userService.completeRegistration(userProfileCompletionDTO);
-        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlan().getName(), user.getUsername());
+        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName());
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
         return ResponseEntity.ok().location(uri).body(userDefaultDTO);
     }
@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/")
     public ResponseEntity<Page<UserDefaultDTO>> newUser(Pageable pagination) {
         Page<UserDefaultDTO> UserDTOPage = userRepository.findByActiveTrue(pagination)
-                .map(user -> new UserDefaultDTO(user.getPlan().getName(), user.getUsername()));
+                .map(user -> new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName()));
         return ResponseEntity.ok(UserDTOPage);
     }
 
@@ -54,7 +54,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDefaultDTO> updateUser(@RequestBody UsernameChangeDTO usernameChangeDTO) {
         User user = userService.updateUsername(usernameChangeDTO);
-        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlan().getName(), user.getUsername());
+        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName());
         return ResponseEntity.ok(userDefaultDTO);
     }
 

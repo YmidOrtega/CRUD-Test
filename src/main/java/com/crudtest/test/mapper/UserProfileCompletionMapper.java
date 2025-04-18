@@ -11,7 +11,7 @@ public interface UserProfileCompletionMapper {
 
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true)
-    @Mapping(target = "plan", ignore = true)
+    @Mapping(target = "planId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "id", ignore = true)

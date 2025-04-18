@@ -31,7 +31,7 @@ public class Plan {
     @Positive
     private int screenLimit;
 
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "planId", cascade = CascadeType.PERSIST)
     @JsonIgnore
     private List<User> users;
 
