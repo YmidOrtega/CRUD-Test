@@ -43,12 +43,12 @@ public class UserService {
     }
 
 
-    public User createUser(@Valid UserRegistrationDTO userRegistrationDTO) {
+    public User createUser(@Valid AuthUserDTO authUserDTO) {
         long planDefaultId = 1L;
         Plan planDefault = planRepository.findById(planDefaultId).orElseThrow(() -> new RuntimeException("Plan not found"));
         long roleDefaultId = 1L;
         Role roleDefault = roleRepository.findById(roleDefaultId).orElseThrow(() -> new RuntimeException("Role not found"));
-        User newUser = userRegistrationMapper.toUser(userRegistrationDTO);
+        User newUser = userRegistrationMapper.toUser(authUserDTO);
         newUser.setCreatedAt(LocalDate.now());
         newUser.setPlanId(planDefault);
         newUser.setRoleId(roleDefault);

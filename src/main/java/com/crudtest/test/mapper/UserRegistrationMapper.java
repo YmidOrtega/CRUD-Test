@@ -1,6 +1,6 @@
 package com.crudtest.test.mapper;
 
-import com.crudtest.test.dto.UserRegistrationDTO;
+import com.crudtest.test.dto.AuthUserDTO;
 import com.crudtest.test.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,5 +22,5 @@ public interface UserRegistrationMapper {
             @Mapping(target = "address", ignore = true)
     })
 
-    User toUser(UserRegistrationDTO userRegistrationDTO);
+    User toUser(AuthUserDTO authUserDTO);
 }

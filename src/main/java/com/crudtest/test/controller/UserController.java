@@ -27,8 +27,8 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserResponseDTO> createdUser(@RequestBody UserRegistrationDTO userRegistrationDTO, UriComponentsBuilder uriBuilder) {
-        User createdUser = userService.createUser(userRegistrationDTO);
+    public ResponseEntity<UserResponseDTO> createdUser(@RequestBody AuthUserDTO authUserDTO, UriComponentsBuilder uriBuilder) {
+        User createdUser = userService.createUser(authUserDTO);
         UserResponseDTO userResponseDTO = new UserResponseDTO(createdUser.getPlanId().getName(), createdUser.getEmail());
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(createdUser.getId()).toUri();
         return ResponseEntity.created(uri).body(userResponseDTO);
