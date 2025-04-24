@@ -1,0 +1,64 @@
+package com.crudtest.test.module.auth.service;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.crudtest.test.module.user.model.User;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+
+@Service
+public class TokenService {
+
+    private static  final String ISSUER = "Ymid";
+    private static final String SECRET_KEY = "mi-clave-super-secreta-para-firmar-jwt"; //no quiero usar una variable de entorno por ahora
+
+    private static final Algorithm ALGORITHM = Algorithm.HMAC256(SECRET_KEY);
+
+    public String generateToken(User user) {
+        validateUser(user);
+        try {
+            return JWT.create()
+                    .withIssuer(ISSUER)
+                    .withIssuedAt(new Date())
+                    .withSubject(user.getEmail())
+                    .withClaim("id", user.getId().toString())
+                    .withExpiresAt(getExpirationTime())
+                    .sign(ALGORITHM);
+        } catch (JWTCreationException e) {
+            throw new RuntimeException("Error al generar el token", e);
+        }
+    }
+
+    public String getSubject(String token) {
+        try {
+            DecodedJWT jwt = JWT.require(ALGORITHM)
+                    .withIssuer(ISSUER)
+                    .acceptLeeway(10)
+                    .build()
+                    .verify(token);
+            return jwt.getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("Token inválido o expirado", e);
+        }
+    }
+
+    private Instant getExpirationTime() {
+        return LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.of("-05:00"));
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || user.getId() == null) {
+            throw new IllegalArgumentException("El usuario no tiene email o id");
+        }
+    }
+
+
+}
+
