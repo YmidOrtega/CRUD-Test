@@ -21,6 +21,7 @@ public class TokenService {
 
     private static final Algorithm ALGORITHM = Algorithm.HMAC256(SECRET_KEY);
 
+    //token de usuario
     public String generateToken(User user) {
         validateUser(user);
         try {
@@ -36,6 +37,7 @@ public class TokenService {
         }
     }
 
+    //verificacion del token si es valido
     public String getSubject(String token) {
         try {
             DecodedJWT jwt = JWT.require(ALGORITHM)
@@ -49,8 +51,28 @@ public class TokenService {
         }
     }
 
+    //Token parcial para nuevos usuarios
+    public String generatePartialToken(User user) {
+        validateUser(user);
+        try {
+            return JWT.create()
+                    .withIssuer(ISSUER)
+                    .withIssuedAt(new Date())
+                    .withSubject(user.getEmail())
+                    .withClaim("id", user.getId().toString())
+                    .withExpiresAt(getExpirationTimePartial())
+                    .sign(ALGORITHM);
+        } catch (JWTCreationException e) {
+            throw new RuntimeException("Error al generar el token", e);
+        }
+    }
+
     private Instant getExpirationTime() {
         return LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.of("-05:00"));
+    }
+
+    public Instant getExpirationTimePartial() {
+        return LocalDateTime.now().plusMinutes(15).toInstant(ZoneOffset.of("-05:00"));
     }
 
     private void validateUser(User user) {

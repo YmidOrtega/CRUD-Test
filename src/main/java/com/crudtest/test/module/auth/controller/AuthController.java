@@ -1,6 +1,6 @@
 package com.crudtest.test.module.auth.controller;
 
-import com.crudtest.test.module.auth.dto.AuthUserDTO;
+import com.crudtest.test.module.user.dto.AuthUserDTO;
 import com.crudtest.test.module.auth.dto.JwtTokenDTO;
 import com.crudtest.test.module.user.model.User;
 import com.crudtest.test.module.auth.service.TokenService;
@@ -25,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping ("/login")
-    public ResponseEntity<JwtTokenDTO> AuthUserString (@RequestBody @Valid AuthUserDTO authUserDTO) {
+    public ResponseEntity<JwtTokenDTO> AuthUser (@RequestBody @Valid AuthUserDTO authUserDTO) {
         Authentication authToken = new UsernamePasswordAuthenticationToken(
                 authUserDTO.email(),
                 authUserDTO.password()
@@ -35,4 +35,5 @@ public class AuthController {
         return ResponseEntity.ok(new JwtTokenDTO(jwtToken));
 
     }
+
 }

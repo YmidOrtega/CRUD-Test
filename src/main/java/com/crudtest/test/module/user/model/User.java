@@ -43,6 +43,8 @@ public class User implements UserDetails {
     private Address address;
     @Column(name = "active")
     private boolean active;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

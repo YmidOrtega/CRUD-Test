@@ -1,5 +1,6 @@
 package com.crudtest.test.module.user.dto;
 
+import com.crudtest.test.module.user.model.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

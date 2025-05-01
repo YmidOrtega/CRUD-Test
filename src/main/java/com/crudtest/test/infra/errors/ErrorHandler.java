@@ -1,5 +1,7 @@
 package com.crudtest.test.infra.errors;
 
+import com.crudtest.test.infra.errors.exceptions.InvalidStatusTransitionException;
+import com.crudtest.test.infra.errors.exceptions.UserNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,5 +23,15 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest().body("ID inválido. Debe ser un número.");
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(404).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    public ResponseEntity<String> handleInvalidStatusTransition(InvalidStatusTransitionException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
     }
 }

@@ -1,10 +1,16 @@
 package com.crudtest.test.module.user.controller;
 
+import com.crudtest.test.infra.errors.exceptions.TokenAlreadyUsedException;
+import com.crudtest.test.infra.errors.exceptions.TokenExpiredException;
+import com.crudtest.test.module.auth.model.PartialTokens;
+import com.crudtest.test.module.auth.service.PartialTokenService;
+import com.crudtest.test.module.auth.service.TokenService;
 import com.crudtest.test.module.user.model.User;
-import com.crudtest.test.module.auth.dto.AuthUserDTO;
+import com.crudtest.test.module.user.dto.AuthUserDTO;
 import com.crudtest.test.module.user.dto.*;
 import com.crudtest.test.module.user.repository.UserRepository;
 import com.crudtest.test.module.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,34 +26,53 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
 
+    private final TokenService tokenService;
+    private final PartialTokenService partialTokenService;
+
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository, TokenService tokenService, PartialTokenService partialTokenService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.tokenService = tokenService;
+        this.partialTokenService = partialTokenService;
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserResponseDTO> createdUser(@RequestBody AuthUserDTO authUserDTO, UriComponentsBuilder uriBuilder) {
-        User createdUser = userService.createUser(authUserDTO);
-        UserResponseDTO userResponseDTO = new UserResponseDTO(createdUser.getPlanId().getName(), createdUser.getEmail());
-        URI uri = uriBuilder.path("/user/{id}").buildAndExpand(createdUser.getId()).toUri();
+    public ResponseEntity<UserResponseDTO> createdUser(@RequestBody AuthUserDTO authUserDTO, UriComponentsBuilder uriBuilder, HttpServletRequest request) {
+
+        String ip = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+
+        UserResponseDTO userResponseDTO = userService.createUser(authUserDTO, ip, userAgent);
+
+        URI uri = uriBuilder.path("/user/{id}").buildAndExpand(userResponseDTO.id()).toUri();
         return ResponseEntity.created(uri).body(userResponseDTO);
     }
 
     @PostMapping("/complete-registration")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, UriComponentsBuilder uriBuilder) {
-        User user = userService.completeRegistration(userProfileCompletionDTO);
-        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName());
-        URI uri = uriBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
+    public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, @RequestHeader("Authorization") PartialTokens partialToken , UriComponentsBuilder uriBuilder)
+            throws TokenExpiredException, TokenAlreadyUsedException {
+        String header = partialToken.getToken().toString();
+        String token = header.substring("Bearer ".length());
+        System.out.printf(token + "\n");
+
+        UserDefaultDTO userDefaultDTO = userService.completeRegistration(userProfileCompletionDTO, partialToken);
+        URI uri = uriBuilder.path("/user/{id}").buildAndExpand(userDefaultDTO.id()).toUri();
         return ResponseEntity.ok().location(uri).body(userDefaultDTO);
     }
 
     @GetMapping("/")
     public ResponseEntity<Page<UserDefaultDTO>> newUser(Pageable pagination) {
         Page<UserDefaultDTO> UserDTOPage = userRepository.findByActiveTrue(pagination)
-                .map(user -> new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName()));
+                .map(user -> new UserDefaultDTO(
+                        user.getId(),
+                        user.getPlanId().getName(),
+                        user.getUsername(),
+                        user.getRoleId().getName())
+                );
+
         return ResponseEntity.ok(UserDTOPage);
     }
 
@@ -55,7 +80,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserDefaultDTO> updateUser(@RequestBody UsernameChangeDTO usernameChangeDTO) {
         User user = userService.updateUsername(usernameChangeDTO);
-        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(user.getPlanId().getName(), user.getUsername(), user.getRoleId().getName());
+        UserDefaultDTO userDefaultDTO = new UserDefaultDTO(
+                user.getId(),
+                user.getPlanId().getName(),
+                user.getUsername(),
+                user.getRoleId().getName());
         return ResponseEntity.ok(userDefaultDTO);
     }
 

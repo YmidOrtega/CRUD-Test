@@ -1,6 +1,6 @@
 package com.crudtest.test.module.user.mapper;
 
-import com.crudtest.test.module.auth.dto.AuthUserDTO;
+import com.crudtest.test.module.user.dto.AuthUserDTO;
 import com.crudtest.test.module.user.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

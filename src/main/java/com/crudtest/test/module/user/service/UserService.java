@@ -1,16 +1,21 @@
 package com.crudtest.test.module.user.service;
 
+import com.crudtest.test.infra.errors.exceptions.InvalidStatusTransitionException;
+import com.crudtest.test.infra.errors.exceptions.TokenAlreadyUsedException;
+import com.crudtest.test.infra.errors.exceptions.TokenExpiredException;
+import com.crudtest.test.infra.errors.exceptions.UserNotFoundException;
+import com.crudtest.test.module.auth.model.PartialTokens;
+import com.crudtest.test.module.auth.repository.PartialTokensRepository;
+import com.crudtest.test.module.auth.service.PartialTokenService;
+import com.crudtest.test.module.user.dto.*;
 import com.crudtest.test.module.user.mapper.UserInformationMapper;
 import com.crudtest.test.module.user.mapper.UserProfileCompletionMapper;
 import com.crudtest.test.module.user.mapper.UserRegistrationMapper;
 import com.crudtest.test.module.plan.model.Plan;
 import com.crudtest.test.module.user.model.Role;
+import com.crudtest.test.module.user.model.Status;
+import com.crudtest.test.module.user.model.StatusTransitionValidator;
 import com.crudtest.test.module.user.model.User;
-import com.crudtest.test.module.auth.dto.AuthUserDTO;
-import com.crudtest.test.module.user.dto.UserDeactivatedDTO;
-import com.crudtest.test.module.user.dto.UserInformationDTO;
-import com.crudtest.test.module.user.dto.UserProfileCompletionDTO;
-import com.crudtest.test.module.user.dto.UsernameChangeDTO;
 import com.crudtest.test.module.plan.repository.PlanRepository;
 import com.crudtest.test.module.user.repository.RoleRepository;
 import com.crudtest.test.module.user.repository.UserRepository;
@@ -27,48 +32,89 @@ public class UserService {
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
     private final RoleRepository roleRepository;
+    private final PartialTokensRepository partialTokensRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final UserInformationMapper userInformationMapper;
     private final UserRegistrationMapper userRegistrationMapper;
     private final UserProfileCompletionMapper userProfileCompletionMapper;
+    private final PartialTokenService partialTokenService;
 
 
 
-    public UserService(UserRepository userRepository, PlanRepository planRepository, RoleRepository roleRepository, UserInformationMapper userInformationMapper, UserRegistrationMapper userRegistrationMapper, UserProfileCompletionMapper userProfileCompletionMapper, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PlanRepository planRepository,
+            RoleRepository roleRepository,
+            PartialTokensRepository partialTokensRepository,
+            PasswordEncoder passwordEncoder,
+            UserInformationMapper userInformationMapper,
+            UserRegistrationMapper userRegistrationMapper,
+            UserProfileCompletionMapper userProfileCompletionMapper,
+            PartialTokenService partialTokenService
+    ) {
         this.userRepository = userRepository;
         this.planRepository = planRepository;
         this.roleRepository = roleRepository;
+        this.partialTokensRepository = partialTokensRepository;
+        this.passwordEncoder = passwordEncoder;
         this.userInformationMapper = userInformationMapper;
         this.userRegistrationMapper = userRegistrationMapper;
         this.userProfileCompletionMapper = userProfileCompletionMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.partialTokenService = partialTokenService;;
     }
 
     private User getUserOrThrow(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("El usuario no existe con el id: " + id));
     }
 
-
-    public User createUser(@Valid AuthUserDTO authUserDTO) {
+    @Transactional
+    public UserResponseDTO createUser(@Valid AuthUserDTO authUserDTO, String ipAddress, String userAgent) {
         long planDefaultId = 1L;
         Plan planDefault = planRepository.findById(planDefaultId).orElseThrow(() -> new RuntimeException("Plan not found"));
         long roleDefaultId = 1L;
         Role roleDefault = roleRepository.findById(roleDefaultId).orElseThrow(() -> new RuntimeException("Role not found"));
+
         User newUser = userRegistrationMapper.toUser(authUserDTO);
+
         newUser.setCreatedAt(LocalDate.now());
         newUser.setPlanId(planDefault);
         newUser.setRoleId(roleDefault);
         newUser.setPassword(passwordEncoder.encode(authUserDTO.password()));
         newUser.setActive(true);
-        return userRepository.save(newUser);
+        newUser.setStatus(Status.PENDING);
+
+        userRepository.save(newUser);
+
+        var partialToken = partialTokenService.createPartialToken(newUser, ipAddress, userAgent);
+
+        return new UserResponseDTO(
+                newUser.getId(),
+                newUser.getPlanId().getName(),
+                newUser.getEmail(),
+                partialToken.getToken()
+        );
     }
 
-    public User completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO) {
-        User user = getUserOrThrow(userProfileCompletionDTO.id());
-        userProfileCompletionMapper.updateUserFromDTO(userProfileCompletionDTO, user);
-        return userRepository.save(user);
+    @Transactional
+    public UserDefaultDTO completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO, PartialTokens partialToken) throws TokenExpiredException, TokenAlreadyUsedException {
+        User existingUser = getUserOrThrow(userProfileCompletionDTO.id());
+        PartialTokens Token = partialTokenService.validateAndConsumeToken(existingUser, partialToken);
+
+        if (!StatusTransitionValidator.canTransition(existingUser.getStatus(), Status.ACTIVE)) {
+            throw new InvalidStatusTransitionException("Transición de estado no permitida de " + existingUser.getStatus() + " a " + Status.ACTIVE);
+        }
+        userProfileCompletionMapper.updateUserFromDTO(userProfileCompletionDTO, existingUser);
+        existingUser.setStatus(Status.ACTIVE);
+        userRepository.save(existingUser);
+
+        return new UserDefaultDTO(
+                existingUser.getId(),
+                existingUser.getPlanId().getName(),
+                existingUser.getUsername(),
+                existingUser.getRoleId().getName());
     }
+
 
     @Transactional
     public User updateUsername(@Valid UsernameChangeDTO usernameChangeDTO) {
