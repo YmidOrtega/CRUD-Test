@@ -45,6 +45,7 @@ public class User implements UserDetails {
     private boolean active;
     @Enumerated(EnumType.STRING)
     private Status status;
+    private String uuid;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

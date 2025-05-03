@@ -52,13 +52,10 @@ public class UserController {
 
     @PostMapping("/complete-registration")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, @RequestHeader("Authorization") PartialTokens partialToken , UriComponentsBuilder uriBuilder)
+    public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, @RequestHeader("Authorization") String partialToken , UriComponentsBuilder uriBuilder)
             throws TokenExpiredException, TokenAlreadyUsedException {
-        String header = partialToken.getToken().toString();
-        String token = header.substring("Bearer ".length());
-        System.out.printf(token + "\n");
 
-        UserDefaultDTO userDefaultDTO = userService.completeRegistration(userProfileCompletionDTO, partialToken);
+        UserDefaultDTO userDefaultDTO = userService.completeRegistration(userProfileCompletionDTO, partialToken.toString());
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(userDefaultDTO.id()).toUri();
         return ResponseEntity.ok().location(uri).body(userDefaultDTO);
     }

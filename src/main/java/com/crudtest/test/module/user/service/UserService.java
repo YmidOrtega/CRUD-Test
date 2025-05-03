@@ -12,10 +12,7 @@ import com.crudtest.test.module.user.mapper.UserInformationMapper;
 import com.crudtest.test.module.user.mapper.UserProfileCompletionMapper;
 import com.crudtest.test.module.user.mapper.UserRegistrationMapper;
 import com.crudtest.test.module.plan.model.Plan;
-import com.crudtest.test.module.user.model.Role;
-import com.crudtest.test.module.user.model.Status;
-import com.crudtest.test.module.user.model.StatusTransitionValidator;
-import com.crudtest.test.module.user.model.User;
+import com.crudtest.test.module.user.model.*;
 import com.crudtest.test.module.plan.repository.PlanRepository;
 import com.crudtest.test.module.user.repository.RoleRepository;
 import com.crudtest.test.module.user.repository.UserRepository;
@@ -25,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -75,21 +73,24 @@ public class UserService {
         long roleDefaultId = 1L;
         Role roleDefault = roleRepository.findById(roleDefaultId).orElseThrow(() -> new RuntimeException("Role not found"));
 
+
         User newUser = userRegistrationMapper.toUser(authUserDTO);
 
         newUser.setCreatedAt(LocalDate.now());
         newUser.setPlanId(planDefault);
         newUser.setRoleId(roleDefault);
+        newUser.setUuid(UUID.randomUUID().toString());
         newUser.setPassword(passwordEncoder.encode(authUserDTO.password()));
         newUser.setActive(true);
         newUser.setStatus(Status.PENDING);
+
 
         userRepository.save(newUser);
 
         var partialToken = partialTokenService.createPartialToken(newUser, ipAddress, userAgent);
 
         return new UserResponseDTO(
-                newUser.getId(),
+                newUser.getUuid(),
                 newUser.getPlanId().getName(),
                 newUser.getEmail(),
                 partialToken.getToken()
@@ -97,7 +98,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDefaultDTO completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO, PartialTokens partialToken) throws TokenExpiredException, TokenAlreadyUsedException {
+    public UserDefaultDTO completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO, String partialToken) throws TokenExpiredException, TokenAlreadyUsedException {
         User existingUser = getUserOrThrow(userProfileCompletionDTO.id());
         PartialTokens Token = partialTokenService.validateAndConsumeToken(existingUser, partialToken);
 

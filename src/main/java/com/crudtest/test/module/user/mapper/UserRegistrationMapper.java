@@ -19,7 +19,10 @@ public interface UserRegistrationMapper {
             @Mapping(target = "username", ignore = true),
             @Mapping(target = "birthDate", ignore = true),
             @Mapping(target = "phoneNumber", ignore = true),
-            @Mapping(target = "address", ignore = true)
+            @Mapping(target = "address", ignore = true),
+            @Mapping(target = "status", ignore = true),
+            @Mapping(target = "uuid", ignore = true),
+
     })
 
     User toUser(AuthUserDTO authUserDTO);

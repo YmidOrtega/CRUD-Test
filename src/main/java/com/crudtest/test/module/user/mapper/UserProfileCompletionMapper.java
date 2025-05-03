@@ -15,6 +15,9 @@ public interface UserProfileCompletionMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "roleId", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "uuid", ignore = true)
 
     User updateUserFromDTO(UserProfileCompletionDTO dto, @MappingTarget User user);
 
