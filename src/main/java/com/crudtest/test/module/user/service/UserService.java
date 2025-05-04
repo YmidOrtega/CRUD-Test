@@ -100,11 +100,11 @@ public class UserService {
     @Transactional
     public UserDefaultDTO completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO, String partialToken) throws TokenExpiredException, TokenAlreadyUsedException {
         User existingUser = getUserOrThrow(userProfileCompletionDTO.id());
-        PartialTokens Token = partialTokenService.validateAndConsumeToken(existingUser, partialToken);
 
         if (!StatusTransitionValidator.canTransition(existingUser.getStatus(), Status.ACTIVE)) {
             throw new InvalidStatusTransitionException("Transición de estado no permitida de " + existingUser.getStatus() + " a " + Status.ACTIVE);
         }
+        PartialTokens Token = partialTokenService.validateAndConsumeToken(existingUser, partialToken);
         userProfileCompletionMapper.updateUserFromDTO(userProfileCompletionDTO, existingUser);
         existingUser.setStatus(Status.ACTIVE);
         userRepository.save(existingUser);

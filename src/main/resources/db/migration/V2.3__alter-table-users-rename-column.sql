@@ -1,1 +1,0 @@
-ALTER TABLE users CHANGE phone phone_number VARCHAR(10) UNIQUE;
