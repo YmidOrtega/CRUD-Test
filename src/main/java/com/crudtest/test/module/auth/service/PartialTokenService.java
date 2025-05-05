@@ -7,15 +7,20 @@ import com.crudtest.test.module.auth.model.PartialTokens;
 import com.crudtest.test.module.auth.repository.PartialTokensRepository;
 import com.crudtest.test.module.user.model.User;
 import com.crudtest.test.module.user.repository.UserRepository;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Service
+@EnableScheduling
 public class PartialTokenService
 {
     private final PartialTokensRepository partialTokensRepository;
@@ -49,15 +54,29 @@ public class PartialTokenService
     public PartialTokens validateAndConsumeToken(User user, String token) throws TokenAlreadyUsedException, TokenExpiredException {
         String tokenNow = token.replace("Bearer ", "");
         String email = tokenService.getSubject(tokenNow);
+        if (!user.getEmail().equals(email)) {
+            throw new InvalidTokenException("El token no corresponde al usuario actual");
+        }
         PartialTokens partialToken = partialTokensRepository.findByUserAndToken(user, tokenNow).orElseThrow(() -> new InvalidTokenException("Token inválido o no encontrado"));
-
-        System.out.println("Token encontrado: " + partialToken);
-
+        
         if (partialToken.isUsed()) throw new TokenAlreadyUsedException("Este token ya fue usado");
-        if (partialToken.getExpiresAt().isBefore(LocalDateTime.now())) throw new TokenExpiredException("El token ha expirado");
+        if (partialToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            partialTokensRepository.delete(partialToken);
+            throw new TokenExpiredException("El token ha expirado") ;
+        }
 
-        partialToken.setUsed(true);
-        return partialTokensRepository.save(partialToken);
+        try {
+            partialToken.setUsed(true);
+            return partialTokensRepository.save(partialToken);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new TokenAlreadyUsedException("Este token ya fue usado por otra solicitud concurrente");
+        }
+    }
+    @Transactional
+    @Scheduled(cron = "*/10 * * * * *")// ->
+    public void cleanUpTokens () {
+        LocalDateTime now = LocalDateTime.now();
+        partialTokensRepository.deleteAllByUsedTrueOrExpiresAtBefore(now);
     }
 
 }

@@ -34,6 +34,8 @@ public class PartialTokens {
     private String ipAddress;
     @Column (name = "user_agent")
     private String userAgent;
+    @Version
+    private Long version;
 
 
 }
