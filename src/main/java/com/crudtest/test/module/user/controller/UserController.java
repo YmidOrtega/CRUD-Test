@@ -8,6 +8,7 @@ import com.crudtest.test.module.user.dto.*;
 import com.crudtest.test.module.user.repository.UserRepository;
 import com.crudtest.test.module.user.service.UserRegistrationService;
 import com.crudtest.test.module.user.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @RestController
+@SecurityRequirement(name="bearer-key")
 public class UserController {
 
     private final UserService userService;
