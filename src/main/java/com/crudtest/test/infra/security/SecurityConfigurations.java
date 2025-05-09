@@ -34,6 +34,7 @@ public class SecurityConfigurations {
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers(HttpMethod.POST,"/login").permitAll()
                             .requestMatchers(HttpMethod.POST,"/register").permitAll()
+                            .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                             .requestMatchers(HttpMethod.GET,"/{id}").hasRole("ADMIN")
                             .anyRequest()
                             .authenticated())

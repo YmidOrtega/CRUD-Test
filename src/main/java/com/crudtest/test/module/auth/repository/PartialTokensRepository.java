@@ -20,4 +20,5 @@ public interface PartialTokensRepository extends JpaRepository<PartialTokens, Lo
     Optional<PartialTokens> findByUserAndToken(User user, String token);
 
     void deleteAllByUsedTrueOrExpiresAtBefore(LocalDateTime now);
+
 }

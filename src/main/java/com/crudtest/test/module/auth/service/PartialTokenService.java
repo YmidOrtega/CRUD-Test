@@ -58,7 +58,7 @@ public class PartialTokenService
             throw new InvalidTokenException("El token no corresponde al usuario actual");
         }
         PartialTokens partialToken = partialTokensRepository.findByUserAndToken(user, tokenNow).orElseThrow(() -> new InvalidTokenException("Token inválido o no encontrado"));
-        
+
         if (partialToken.isUsed()) throw new TokenAlreadyUsedException("Este token ya fue usado");
         if (partialToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             partialTokensRepository.delete(partialToken);
@@ -73,7 +73,7 @@ public class PartialTokenService
         }
     }
     @Transactional
-    @Scheduled(cron = "*/10 * * * * *")// ->
+    @Scheduled(cron = "0 0 0 1 * ?")
     public void cleanUpTokens () {
         LocalDateTime now = LocalDateTime.now();
         partialTokensRepository.deleteAllByUsedTrueOrExpiresAtBefore(now);

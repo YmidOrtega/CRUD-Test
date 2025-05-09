@@ -2,16 +2,13 @@ package com.crudtest.test.module.user.controller;
 
 import com.crudtest.test.infra.errors.exceptions.TokenAlreadyUsedException;
 import com.crudtest.test.infra.errors.exceptions.TokenExpiredException;
-import com.crudtest.test.module.auth.model.PartialTokens;
-import com.crudtest.test.module.auth.service.PartialTokenService;
-import com.crudtest.test.module.auth.service.TokenService;
 import com.crudtest.test.module.user.model.User;
 import com.crudtest.test.module.user.dto.AuthUserDTO;
 import com.crudtest.test.module.user.dto.*;
 import com.crudtest.test.module.user.repository.UserRepository;
+import com.crudtest.test.module.user.service.UserRegistrationService;
 import com.crudtest.test.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,18 +20,16 @@ import java.net.URI;
 
 @RestController
 public class UserController {
+
     private final UserService userService;
+    private final UserRegistrationService userRegistrationService;
     private final UserRepository userRepository;
 
-    private final TokenService tokenService;
-    private final PartialTokenService partialTokenService;
 
-    @Autowired
-    public UserController(UserService userService, UserRepository userRepository, TokenService tokenService, PartialTokenService partialTokenService) {
+    public UserController(UserService userService, UserRegistrationService userRegistrationService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRegistrationService = userRegistrationService;
         this.userRepository = userRepository;
-        this.tokenService = tokenService;
-        this.partialTokenService = partialTokenService;
     }
 
     @PostMapping("/register")
@@ -43,8 +38,7 @@ public class UserController {
 
         String ip = request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
-
-        UserResponseDTO userResponseDTO = userService.createUser(authUserDTO, ip, userAgent);
+        UserResponseDTO userResponseDTO = userRegistrationService.createUser(authUserDTO, ip, userAgent);
 
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(userResponseDTO.id()).toUri();
         return ResponseEntity.created(uri).body(userResponseDTO);
@@ -55,7 +49,7 @@ public class UserController {
     public ResponseEntity<UserDefaultDTO> completeRegistration(@RequestBody UserProfileCompletionDTO userProfileCompletionDTO, @RequestHeader("Authorization") String partialToken , UriComponentsBuilder uriBuilder)
             throws TokenExpiredException, TokenAlreadyUsedException {
 
-        UserDefaultDTO userDefaultDTO = userService.completeRegistration(userProfileCompletionDTO, partialToken.toString());
+        UserDefaultDTO userDefaultDTO = userRegistrationService.completeRegistration(userProfileCompletionDTO, partialToken);
         URI uri = uriBuilder.path("/user/{id}").buildAndExpand(userDefaultDTO.id()).toUri();
         return ResponseEntity.ok().location(uri).body(userDefaultDTO);
     }
