@@ -50,8 +50,8 @@ public class UserRegistrationService {
         this.userRegistrationMapper = userRegistrationMapper;
     }
 
-    private User getUserOrThrow(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("El usuario no existe con el id: " + id));
+    private User getUserOrThrow(String uuid) {
+        return userRepository.findByUuid(uuid).orElseThrow(() -> new UserNotFoundException("El usuario no existe con el uuid: " + uuid));
     }
 
     @Transactional
@@ -78,14 +78,14 @@ public class UserRegistrationService {
         return new UserResponseDTO(
                 newUser.getUuid(),
                 newUser.getPlanId().getName(),
-                newUser.getEmail(),
+                newUser.getUsername(),
                 partialToken.getToken()
         );
     }
 
     @Transactional
     public UserDefaultDTO completeRegistration(@Valid UserProfileCompletionDTO userProfileCompletionDTO, String partialToken) throws TokenExpiredException, TokenAlreadyUsedException {
-        User existingUser = getUserOrThrow(userProfileCompletionDTO.id());
+        User existingUser = getUserOrThrow(userProfileCompletionDTO.uuid());
 
         if (!StatusTransitionValidator.canTransition(existingUser.getStatus(), Status.ACTIVE)) {
             throw new InvalidStatusTransitionException("Transición de estado no permitida de " + existingUser.getStatus() + " a " + Status.ACTIVE);
@@ -96,7 +96,7 @@ public class UserRegistrationService {
         userRepository.save(existingUser);
 
         return new UserDefaultDTO(
-                existingUser.getId(),
+                existingUser.getUuid(),
                 existingUser.getPlanId().getName(),
                 existingUser.getUsername(),
                 existingUser.getRoleId().getName());

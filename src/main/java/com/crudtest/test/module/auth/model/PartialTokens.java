@@ -24,6 +24,7 @@ public class PartialTokens {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(length = 1024)
     private String token;
     @Column (name = "created_at")
     private LocalDateTime createdAt;

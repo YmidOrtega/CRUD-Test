@@ -7,7 +7,6 @@ import com.crudtest.test.module.user.model.Role;
 import com.crudtest.test.module.user.model.Status;
 import com.crudtest.test.module.user.model.User;
 import com.crudtest.test.module.user.repository.RoleRepository;
-import com.crudtest.test.module.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
@@ -34,9 +32,6 @@ class PartialTokensRepositoryTest {
 
     @Autowired
     private PartialTokensRepository partialTokensRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -58,12 +53,11 @@ class PartialTokensRepositoryTest {
         }
     }
 
-
     @Test
     @DisplayName("Returns empty Optional when token does not match for user")
     void findByUserAndTokenReturnsEmptyWhenTokenDoesNotMatch() {
         User user = createUser("ymid@gmail.com", "password");
-        PartialTokens partial = createPartialToken(user, "validToken");
+        createPartialToken(user, "validToken");
         var partialTokens = partialTokensRepository.findByUserAndToken(user, "invalidToken");
         assertThat(partialTokens).isEmpty();
 
@@ -81,8 +75,8 @@ class PartialTokensRepositoryTest {
     @Test
     @DisplayName("Returns Optional with PartialTokens when user and token match")
     void findByUserAndTokenReturnsPartialTokensWhenUserAndTokenMatch() {
-        User user = createUser("ymid@gmail.com", "password");;
-        PartialTokens partial = createPartialToken(user, "validToken");
+        User user = createUser("ymid@gmail.com", "password");
+        createPartialToken(user, "validToken");
         var result = partialTokensRepository.findByUserAndToken(user, "validToken");
         assertThat(result).isPresent();
         assertThat(result.get().getToken()).isEqualTo("validToken");
@@ -124,6 +118,5 @@ class PartialTokensRepositoryTest {
         entityManager.persist(user);
         return user;
     }
-
 
 }

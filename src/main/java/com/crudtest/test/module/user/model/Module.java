@@ -10,7 +10,7 @@
 //
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.AUTO)
-//    private Long id;
+//    private Long uuid;
 //    private String name;
 //
 //}
