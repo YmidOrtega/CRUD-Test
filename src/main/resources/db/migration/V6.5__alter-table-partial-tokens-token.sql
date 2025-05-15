@@ -1,2 +1,1 @@
-ALTER TABLE partial_tokens MODIFY token VARCHAR(1024);
-
+ALTER TABLE partial_tokens MODIFY token VARCHAR(768);
