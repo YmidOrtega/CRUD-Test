@@ -50,8 +50,8 @@ public class PartialTokenService {
     public PartialTokens validateAndConsumeToken(User user, String token)
             throws TokenAlreadyUsedException, TokenExpiredException {
         String tokenNow = token.replace("Bearer ", "");
-        String email = tokenService.getSubject(tokenNow);
-        if (!user.getEmail().equals(email)) {
+        String uuid = tokenService.getSubject(tokenNow);
+        if (!user.getUuid().equals(uuid)) {
             throw new InvalidTokenException("El token no corresponde al usuario actual");
         }
         PartialTokens partialToken = partialTokensRepository.findByUserAndToken(user, tokenNow)

@@ -60,6 +60,7 @@ public class UserController {
             @RequestHeader("Authorization") String partialToken, UriComponentsBuilder uriBuilder)
             throws TokenExpiredException, TokenAlreadyUsedException {
 
+        System.out.println("Partial Token: " + partialToken);
         UserDefaultDTO userDefaultDTO = userRegistrationService.completeRegistration(userProfileCompletionDTO,
                 partialToken);
         URI uri = uriBuilder.path("/user/{uuid}").buildAndExpand(userDefaultDTO.uuid()).toUri();

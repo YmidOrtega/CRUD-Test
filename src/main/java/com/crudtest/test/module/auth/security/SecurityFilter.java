@@ -30,12 +30,12 @@ public class SecurityFilter extends OncePerRequestFilter {
         try {
             String token = extractToken(request);
             if (token != null) {
-                String email = tokenService.getSubject(token);
-                var user = userRepository.findByEmail(email);
+                String uuid = tokenService.getSubject(token);
+                var user = userRepository.findByUuid(uuid);
                 var auth = new UsernamePasswordAuthenticationToken(
                         user,
                         null,
-                        user.getAuthorities());
+                        user.get().getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
 

@@ -27,8 +27,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
+@ActiveProfiles("test") // Cambiado a minúsculas
 class PartialTokensRepositoryTest {
+
+    private static final String TEST_EMAIL = "test@example.com";
+    private static final String TEST_PASSWORD = "testPassword123";
+    private static final String VALID_TOKEN = "validToken";
+    private static final String INVALID_TOKEN = "invalidToken";
+    private static final Long DEFAULT_PLAN_ID = 1L;
+    private static final Long DEFAULT_ROLE_ID = 1L;
 
     @Autowired
     private PartialTokensRepository partialTokensRepository;
@@ -54,32 +61,53 @@ class PartialTokensRepositoryTest {
     }
 
     @Test
-    @DisplayName("Returns empty Optional when token does not match for user")
+    @DisplayName("Debería retornar Optional vacío cuando el token no coincide")
     void findByUserAndTokenReturnsEmptyWhenTokenDoesNotMatch() {
-        User user = createUser("ymid@gmail.com", "password");
-        createPartialToken(user, "validToken");
-        var partialTokens = partialTokensRepository.findByUserAndToken(user, "invalidToken");
-        assertThat(partialTokens).isEmpty();
+        // Arrange
+        User user = createUser(TEST_EMAIL, TEST_PASSWORD);
+        createPartialToken(user, VALID_TOKEN);
+        entityManager.flush();
 
+        // Act
+        var result = partialTokensRepository.findByUserAndToken(user, INVALID_TOKEN);
+
+        // Assert
+        assertThat(result).isEmpty();
     }
 
     @Test
-    @DisplayName("Returns empty Optional when user does not exist")
+    @DisplayName("Debería retornar Optional vacío cuando el usuario no existe")
     void findByUserAndTokenReturnsEmptyWhenUserDoesNotExist() {
+        // Arrange
         User nonExistentUser = new User();
         nonExistentUser.setId(999L);
-        var partialTokens = partialTokensRepository.findByUserAndToken(nonExistentUser, "token");
-        assertThat(partialTokens).isEmpty();
+
+        // Act
+        var result = partialTokensRepository.findByUserAndToken(nonExistentUser, VALID_TOKEN);
+
+        // Assert
+        assertThat(result).isEmpty();
     }
 
     @Test
-    @DisplayName("Returns Optional with PartialTokens when user and token match")
-    void findByUserAndTokenReturnsPartialTokensWhenUserAndTokenMatch() {
-        User user = createUser("ymid@gmail.com", "password");
-        createPartialToken(user, "validToken");
-        var result = partialTokensRepository.findByUserAndToken(user, "validToken");
-        assertThat(result).isPresent();
-        assertThat(result.get().getToken()).isEqualTo("validToken");
+    @DisplayName("Debería retornar PartialTokens cuando usuario y token coinciden")
+    void findByUserAndTokenReturnsPartialTokensWhenMatch() {
+        // Arrange
+        User user = createUser(TEST_EMAIL, TEST_PASSWORD);
+        createPartialToken(user, VALID_TOKEN);
+        entityManager.flush();
+
+        // Act
+        var result = partialTokensRepository.findByUserAndToken(user, VALID_TOKEN);
+
+        // Assert
+        assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(token -> {
+                    assertThat(token.getToken()).isEqualTo(VALID_TOKEN);
+                    assertThat(token.getUser()).isEqualTo(user);
+                    assertThat(token.isUsed()).isFalse();
+                });
     }
 
     private PartialTokens createPartialToken(User user, String token) {
@@ -87,21 +115,19 @@ class PartialTokensRepositoryTest {
         partialToken.setUser(user);
         partialToken.setToken(token);
         partialToken.setCreatedAt(LocalDateTime.now());
-        LocalDateTime localExpiration = LocalDateTime.now().plusDays(1);
-        partialToken.setExpiresAt(localExpiration);
+        partialToken.setExpiresAt(LocalDateTime.now().plusDays(1));
         partialToken.setUsed(false);
-        partialToken.setIpAddress("0:0:0:0:0:0:0:1");
-        partialToken.setUserAgent("PostmanRuntime/7.43.4");
+        partialToken.setIpAddress("127.0.0.1");
+        partialToken.setUserAgent("JUnit Test");
         entityManager.persist(partialToken);
         return partialToken;
     }
 
     private User createUser(String email, String password) {
-
-        long planDefaultId = 1L;
-        Plan plan = planRepository.findById(planDefaultId).orElseThrow(() -> new RuntimeException("Plan not found"));
-        long roleDefaultId = 1L;
-        Role role = roleRepository.findById(roleDefaultId).orElseThrow(() -> new RuntimeException("Role not found"));
+        Plan plan = planRepository.findById(DEFAULT_PLAN_ID)
+                .orElseThrow(() -> new RuntimeException("Plan por defecto no encontrado"));
+        Role role = roleRepository.findById(DEFAULT_ROLE_ID)
+                .orElseThrow(() -> new RuntimeException("Rol por defecto no encontrado"));
 
         User user = new User();
         user.setRoleId(role);
@@ -113,10 +139,7 @@ class PartialTokensRepositoryTest {
         user.setActive(true);
         user.setStatus(Status.PENDING);
 
-        user.setEmail(email);
-        user.setPassword(password);
         entityManager.persist(user);
         return user;
     }
-
 }

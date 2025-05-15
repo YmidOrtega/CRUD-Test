@@ -10,7 +10,7 @@ public record UserProfileCompletionDTO(
                 @NotBlank String firstName,
                 @NotBlank String lastName,
                 @NotBlank String username,
-                @NotBlank LocalDate birthDate,
+                @NotNull LocalDate birthDate,
                 @NotBlank String phoneNumber,
                 @NotNull AddressDTO address) {
 }
