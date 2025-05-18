@@ -1,6 +1,5 @@
 package com.crudtest.test.module.user.controller;
 
-import com.crudtest.test.module.user.service.UserRegistrationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
