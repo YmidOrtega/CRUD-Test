@@ -5,6 +5,7 @@ import com.crudtest.test.module.auth.dto.JwtTokenDTO;
 import com.crudtest.test.module.user.model.User;
 import com.crudtest.test.module.auth.service.TokenService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,15 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@AllArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-
-    public AuthController(AuthenticationManager authenticationManager, TokenService tokenService) {
-        this.authenticationManager = authenticationManager;
-        this.tokenService = tokenService;
-    }
 
     @PostMapping ("/login")
     public ResponseEntity<JwtTokenDTO> AuthUser (@RequestBody @Valid AuthUserDTO authUserDTO) {

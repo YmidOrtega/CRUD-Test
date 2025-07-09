@@ -43,7 +43,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserResponseDTO> createdUser(@Valid @RequestBody AuthUserDTO authUserDTO,
-            UriComponentsBuilder uriBuilder, HttpServletRequest request) {
+                                                       UriComponentsBuilder uriBuilder, HttpServletRequest request) {
 
         String ip = request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
@@ -90,16 +90,6 @@ public class UserController {
         return ResponseEntity.ok(userDefaultDTO);
     }
 
-    // @DeleteMapping("/{uuid}")
-    // @ResponseStatus(HttpStatus.OK)
-    // public ResponseEntity<Void> deleteUser(@PathVariable Long uuid) {
-    // try {
-    // userService.deleteUser(uuid);
-    // return ResponseEntity.ok().build();
-    // } catch (Exception e) {
-    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    // }
-    // }
 
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
@@ -109,7 +99,6 @@ public class UserController {
     }
 
     @GetMapping("/{uuid}")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserInformationDTO> userInformation(@PathVariable Long id) {
         UserInformationDTO userInformationDTO = userStatusService.userInformationDTO(id);
         return ResponseEntity.ok(userInformationDTO);
