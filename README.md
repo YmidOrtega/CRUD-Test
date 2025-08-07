@@ -1,7 +1,5 @@
 # CRUD-Test
 
-Este proyecto es una API desarrollada en Java con Spring Boot, orientada a gestionar usuarios y autenticación, implementando funcionalidades de registro, autenticación JWT, manejo de estados de usuario, y pruebas automatizadas. El sistema también está preparado para integrarse con módulos de inteligencia artificial.
-
 ## Características principales
 
 ### 1. Registro y gestión de usuarios
