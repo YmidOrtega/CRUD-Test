@@ -91,14 +91,14 @@ public class UserController {
     }
 
 
-    @DeleteMapping("/{uuid}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<User> deactivateUser(@PathVariable Long id) {
         userStatusService.userDeactivatedDTO(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{uuid}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserInformationDTO> userInformation(@PathVariable Long id) {
         UserInformationDTO userInformationDTO = userStatusService.userInformationDTO(id);
         return ResponseEntity.ok(userInformationDTO);

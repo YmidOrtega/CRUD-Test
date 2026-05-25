@@ -35,7 +35,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/ai").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/{uuid}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/{id}").hasRole("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
